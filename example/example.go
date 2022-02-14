@@ -1,11 +1,11 @@
 package main
 
 import (
-	"log"
 	"context"
+	"log"
 	"net/http"
 
-	"github.com/apuigsech/rest-layer-sql"
+	"github.com/Hyper38/rest-layer-sql"
 
 	"github.com/rs/rest-layer/resource"
 	"github.com/rs/rest-layer/rest"
@@ -15,32 +15,32 @@ import (
 )
 
 const (
-	DB_DRIVER		= "sqlite3"
-	DB_SOURCE		= "file::memory:?cache=shared"
-	DB_TABLE 		= "units"
+	DB_DRIVER = "sqlite3"
+	DB_SOURCE = "file::memory:?cache=shared"
+	DB_TABLE  = "units"
 
-	DB_TABLE_UP		= "CREATE TABLE IF NOT EXISTS units (id VARCHAR(128) PRIMARY KEY,etag VARCHAR(128),updated TIMESTAMP,created TIMESTAMP,str VARCHAR(150),int INTEGER)"
+	DB_TABLE_UP = "CREATE TABLE IF NOT EXISTS units (id VARCHAR(128) PRIMARY KEY,etag VARCHAR(128),updated TIMESTAMP,created TIMESTAMP,str VARCHAR(150),int INTEGER)"
 )
 
 var (
 	unit = schema.Schema{
 		Fields: schema.Fields{
-			"id": schema.IDField,
+			"id":      schema.IDField,
 			"created": schema.CreatedField,
 			"updated": schema.UpdatedField,
 			"str": {
-				Sortable: true,
+				Sortable:   true,
 				Filterable: true,
-				Required: true,
+				Required:   true,
 				Validator: &schema.String{
 					MaxLen: 150,
 				},
 			},
 			"int": {
-				Sortable: true,
+				Sortable:   true,
 				Filterable: true,
-				Required: true,
-				Validator: &schema.Integer{},
+				Required:   true,
+				Validator:  &schema.Integer{},
 			},
 		},
 	}
