@@ -146,10 +146,7 @@ func (h *SQLHandler) Find(ctx context.Context, q *query.Query) (list *resource.I
 
 		list.Items = append(list.Items, item)
 	}
-	if h.config.VerboseLevel >= DEBUG {
-		log.Println("Close DB session")
-	}
-	h.session.Close()
+
 	return list, nil
 }
 
