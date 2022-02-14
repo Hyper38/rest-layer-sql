@@ -1,10 +1,10 @@
 package sqlStorage
 
 import (
-	"fmt"
-	"log"
 	"context"
 	"database/sql"
+	"fmt"
+	"log"
 
 	"github.com/rs/rest-layer/resource"
 	"github.com/rs/rest-layer/schema"
@@ -21,15 +21,15 @@ const (
 type AutoIncrementingInteger int
 
 type Config struct {
-	VerboseLevel int
+	VerboseLevel   int
 	QueryTemplates map[string]string
 }
 
 type SQLHandler struct {
-	driverName	string
-	session		*sql.DB
-	tableName 	string
-	config      *Config
+	driverName string
+	session    *sql.DB
+	tableName  string
+	config     *Config
 }
 
 func NewHandler(driverName string, dataSourceName string, tableName string, config *Config) (h *SQLHandler, err error) {
@@ -44,7 +44,7 @@ func NewHandler(driverName string, dataSourceName string, tableName string, conf
 }
 
 func NewHandlerWithDB(driverName string, db *sql.DB, tableName string, config *Config) *SQLHandler {
-	if (config == nil) {
+	if config == nil {
 		config = &Config{}
 	}
 
@@ -52,19 +52,19 @@ func NewHandlerWithDB(driverName string, db *sql.DB, tableName string, config *C
 		driverName: driverName,
 		session:    db,
 		tableName:  tableName,
-		config: config,
+		config:     config,
 	}
 }
 
 func (h *SQLHandler) ExecContext(ctx context.Context, sqlQuery string, sqlParams ...interface{}) (sql.Result, error) {
-	if (h.config.VerboseLevel >= DEBUG) {
+	if h.config.VerboseLevel >= DEBUG {
 		log.Println(sqlQuery, sqlParams)
 	}
 	return h.session.ExecContext(ctx, sqlQuery, sqlParams...)
 }
 
 func (h *SQLHandler) QueryContext(ctx context.Context, sqlQuery string, sqlParams ...interface{}) (*sql.Rows, error) {
-	if (h.config.VerboseLevel >= DEBUG) {
+	if h.config.VerboseLevel >= DEBUG {
 		log.Println(sqlQuery, sqlParams)
 	}
 	return h.session.QueryContext(ctx, sqlQuery, sqlParams...)
@@ -123,7 +123,7 @@ func (h *SQLHandler) Find(ctx context.Context, q *query.Query) (list *resource.I
 				v = string(b)
 			}
 
-			if (cols[i] == "etag") {
+			if cols[i] == "etag" {
 				etag = v.(string)
 			} else {
 				rowMap[cols[i]] = v
@@ -138,19 +138,19 @@ func (h *SQLHandler) Find(ctx context.Context, q *query.Query) (list *resource.I
 		}
 
 		item := &resource.Item{
-			ID:      itemID,
-			ETag:    etag,
+			ID:   itemID,
+			ETag: etag,
 			//Updated: rowMap["updated"],
 			Payload: rowMap,
 		}
 
 		list.Items = append(list.Items, item)
 	}
-
+	h.session.Close()
 	return list, nil
 }
 
-func (h *SQLHandler)Insert(ctx context.Context, items []*resource.Item) (err error) {
+func (h *SQLHandler) Insert(ctx context.Context, items []*resource.Item) (err error) {
 	txPtr, err := h.session.Begin()
 	if err != nil {
 		return err
@@ -195,7 +195,7 @@ func (h *SQLHandler)Insert(ctx context.Context, items []*resource.Item) (err err
 						v = string(b)
 					}
 
-					if (cols[i] == "etag") {
+					if cols[i] == "etag" {
 						etag = v.(string)
 					} else {
 						rowMap[cols[i]] = v
@@ -227,7 +227,7 @@ func (h *SQLHandler)Insert(ctx context.Context, items []*resource.Item) (err err
 	}
 
 	txPtr.Commit()
-	
+
 	return nil
 }
 
@@ -237,7 +237,7 @@ func (h *SQLHandler) Update(ctx context.Context, item *resource.Item, original *
 		return err
 	}
 
-	_, err  = h.ExecContext(ctx, h.ApplyQueryTemplate("update", sqlQuery), sqlParams...)
+	_, err = h.ExecContext(ctx, h.ApplyQueryTemplate("update", sqlQuery), sqlParams...)
 	return err
 }
 
@@ -260,18 +260,18 @@ func (h *SQLHandler) Clear(ctx context.Context, q *query.Query) (total int, err 
 	sqlQuery, sqlParams, err := buildClearQuery(h.tableName, q, h.driverName)
 	if err != nil {
 		txPtr.Rollback()
-		return 0,err
+		return 0, err
 	}
 
 	res, err := h.ExecContext(ctx, h.ApplyQueryTemplate("clear", sqlQuery), sqlParams...)
 	if err != nil {
 		txPtr.Rollback()
-		return 0,err
+		return 0, err
 	}
 	count, err := res.RowsAffected()
 	if err != nil {
 		txPtr.Rollback()
-		return 0,err		
+		return 0, err
 	}
 	txPtr.Commit()
 
